@@ -1,0 +1,94 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Прогноз погоды</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="weather-container">
+        <h1>Прогноз погоды</h1>
+        
+        <form method="GET" class="weather-form">
+            {{ form.as_p }}
+            {% csrf_token %}
+            <button type="submit" class="submit-btn">Узнать погоду</button>
+        </form>
+
+        {% if weather %}
+        <div class="weather-results">
+            <h2>Погода в городе {{ form.cleaned_data.city_name|capfirst }}</h2>
+
+            <div class="current-weather">
+                <h3>Сейчас</h3>
+                <div class="main-params">
+                    <p><i>Температура:</i> {{ weather.current.temperature_2m }}°C</p>
+                    <p><i>Ощущается как:</i> {{ weather.current.apparent_temperature }}°C</p>
+                    <p><i>Часовой пояс:</i> {{ weather.timezone }}</p>
+                </div>
+      
+                <div class="weather-details">
+                    <div class="detail-column">
+                        <h4>Атмосферные показатели:</h4>
+                        <p><i>Давление:</i> {{ weather.current.pressure_msl }} гПа</p>
+                        <p><i>Влажность:</i> {{ weather.current.relative_humidity_2m }}%</p>
+                        <p><i>Облачность:</i> {{ weather.current.cloud_cover }}%</p>
+                    </div>
+        
+                    <div class="detail-column">
+                        <h4>Осадки:</h4>
+                        {% if weather.current.precipitation > 0 %}
+                            <p><i>Всего осадков:</i> {{ weather.current.precipitation }} мм</p>
+                        {% endif %}
+      
+                        {% if weather.current.rain > 0 %}
+                            <p><i>Дождь:</i> {{ weather.current.rain }} мм</p>
+                        {% endif %}
+      
+                        {% if weather.current.showers > 0 %}
+                            <p><i>Ливни:</i> {{ weather.current.showers }} мм</p>
+                        {% endif %}
+      
+                        {% if weather.current.snowfall > 0 %}
+                            <p><i>Снег:</i> {{ weather.current.snowfall }} см</p>
+                        {% endif %}
+      
+                        {% if weather.current.precipitation == 0 and weather.current.rain == 0 and weather.current.showers == 0 and weather.current.snowfall == 0 %}
+                            <p>Осадков нет</p>
+                        {% endif %}
+                    </div>
+        
+                    <div class="detail-column">
+                        <h4>Ветер:</h4>
+                        <p><i>Скорость:</i> {{ weather.current.wind_speed_10m }} км/ч</p>
+                        {% if weather.current.wind_direction_10m %}
+                            <p><i>Направление:</i> {{ weather.current.wind_direction_10m }}°</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if weather.daily_forecast %}
+            <div class="daily-forecast">
+                <h3>Прогноз на {{ weather.daily_forecast|length }} дней</h3>
+      
+                <div class="daily-forecast-grid">
+                    {% for day in weather.daily_forecast %}
+                    <div class="daily-forecast-item">
+                        <h4>{{ day.date }}</h4>
+                        <p><i>Макс. температура:</i> {{ day.temp_max }}°C</p>
+                        <p><i>Мин. температура:</i> {{ day.temp_min }}°C</p>
+                        <p><i>Осадки:</i> {{ day.precipitation }} мм</p>
+                        <p><i>Погода:</i> {{ day.weather_code }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
